@@ -1,5 +1,5 @@
 # Evaluation of Magist for ENIAC Partnership
-https://prezi.com/view/CGaIzOEf6VfaH7zTRUB9/?referral_token=WiGIBmlnB3FN
+
 
 
 About the project
@@ -12,3 +12,10 @@ Using the Magist e‑commerce dataset, we examine:
 	•	Product reviews and ratings
 
 The goal is to provide a data‑driven recommendation on whether ENIAC should move forward with a partnership with Magist.
+
+
+
+
+#Presentation:
+https://prezi.com/view/CGaIzOEf6VfaH7zTRUB9/?referral_token=WiGIBmlnB3FN
+
