@@ -1,0 +1,17 @@
+How to use this repo
+This repo contains:
+	•	SQL scripts for each business question (in  sql/  or directly in the README)
+	•	Data analysis and reasoning notes (Markdown)
+	•	Visualizations and presentation materials (slides, Tableau dashboards, etc.)
+You can:
+	•	Run the SQL queries on your Magist database.
+	•	Explore the tables and add your own variations.
+	•	Build dashboards (e.g., in Tableau) to present the findings.
+
+
+  Conclusion
+Based on the analysis:
+	•	Magist is not a tech‑focused marketplace; tech products make up only a small share of total products sold and sellers.
+	•	Delivery performance for tech items is reliable and relatively fast, especially compared to big furniture items.
+	•	Overall, Magist is not an ideal long‑term platform for high‑end Apple products like ENIAC’s, 
+  but a small‑scale pilot could still be useful to test demand and customer satisfaction.
