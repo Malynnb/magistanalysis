@@ -1,0 +1,327 @@
+USE magist;
+-- 1
+
+-- tech category 
+SELECT DISTINCT
+  product_category_name AS tech_category
+FROM products
+WHERE product_category_name IN (
+  'computer_accessories',
+  'electronic',
+  'console_games',
+  'air_conditioning',
+  'audio',
+  'computers',
+  'music',
+  'tablets_printing_image',
+  'pc_gamer',
+  'telephony',
+  'fixed_telephony',
+  'dvds_blu_ray')
+
+
+
+ORDER BY product_category_name;
+
+WITH classified_products AS (
+  SELECT
+    oi.*,
+    CASE
+      WHEN p.product_category_name IN (
+        'computer_accessories',
+        'electronic',
+        'console_games',
+        'air_conditioning',
+        'audio',
+        'computers',
+        'music',
+        'tablets_printing_image',
+        'pc_gamer',
+        'telephony',
+        'fixed_telephony',
+        'dvds_blu_ray'
+      ) THEN 'Tech'
+      ELSE 'Non‑tech'
+    END AS category_group
+  FROM order_items oi
+  JOIN products p ON oi.product_id = p.product_id
+)
+
+
+-- products sold , pct
+SELECT
+  category_group,
+  COUNT(*) AS products_sold,
+  ROUND(
+    100.0 * COUNT(*) / SUM(COUNT(*)) OVER (),
+    2
+  ) AS pct_of_total_sold
+FROM classified_products
+GROUP BY category_group;
+
+
+-- avg price all products
+SELECT
+  AVG(oi.price) AS avg_price_all_products
+FROM order_items oi
+JOIN products p ON oi.product_id = p.product_id;
+
+
+-- is tech product expensive, units sold, pct
+
+WITH tech_products AS (
+  SELECT
+    oi.*,
+    p.product_category_name,
+    CASE
+      WHEN p.product_category_name IN (
+        'computer_accessories',
+        'electronic',
+        'console_games',
+        'air_conditioning',
+        'audio',
+        'computers',
+        'music',
+        'tablets_printing_image',
+        'pc_gamer',
+        'telephony',
+        'fixed_telephony',
+        'dvds_blu_ray'
+      ) THEN 'Tech'
+      ELSE 'Non‑tech'
+    END AS category_group
+  FROM order_items oi
+  JOIN products p ON oi.product_id = p.product_id
+),
+tech_price_bands AS (
+  SELECT
+    *,
+    CASE
+      WHEN price < 50 THEN 'Cheap'
+      WHEN price < 200 THEN 'Medium'
+      ELSE 'Expensive'
+    END AS price_band
+  FROM tech_products
+  WHERE category_group = 'Tech'
+)
+SELECT
+  price_band,
+  COUNT(*) AS units_sold,
+  ROUND(
+    100.0 * COUNT(*) / SUM(COUNT(*)) OVER (),
+    2
+  ) AS pct_of_tech_sold
+FROM tech_price_bands
+GROUP BY price_band
+ORDER BY units_sold DESC;
+
+
+-- 2
+
+SELECT 
+  COUNT(DISTINCT DATE_FORMAT(order_purchase_timestamp, '%Y-%m')) AS months_count
+FROM orders;
+
+-- Total sellers
+SELECT COUNT(*) AS total_sellers
+FROM sellers;
+
+-- Tech sellers (only sellers who ever sold a tech product)
+SELECT 
+  COUNT(DISTINCT oi.seller_id) AS tech_sellers
+FROM order_items oi
+JOIN products p ON oi.product_id = p.product_id
+WHERE p.product_category_name IN (
+  'computer_accessories',
+  'electronic',
+  'console_games',
+  'air_conditioning',
+  'audio',
+  'computers',
+  'music',
+  'tablets_printing_image',
+  'pc_gamer',
+  'telephony',
+  'fixed_telephony',
+  'dvds_blu_ray'
+);
+
+-- Percentage of overall sellers that are Tech sellers
+SELECT 
+  (SELECT COUNT(*) FROM sellers) AS total_sellers,
+  COUNT(DISTINCT oi.seller_id) AS tech_sellers,
+  ROUND(
+    100.0 * COUNT(DISTINCT oi.seller_id) / (SELECT COUNT(*) FROM sellers),
+    2
+  ) AS tech_sellers_pct
+FROM order_items oi
+JOIN products p ON oi.product_id = p.product_id
+WHERE p.product_category_name IN (
+  'computer_accessories',
+  'electronic',
+  'console_games',
+  'air_conditioning',
+  'audio',
+  'computers',
+  'music',
+  'tablets_printing_image',
+  'pc_gamer',
+  'telephony',
+  'fixed_telephony',
+  'dvds_blu_ray');
+
+
+-- Total revenue for all sellers
+SELECT 
+  SUM(oi.price + oi.freight_value) AS total_earnings_all_sellers
+FROM order_items oi;
+
+
+-- Total revenue for Tech sellers only
+SELECT 
+  SUM(oi.price + oi.freight_value) AS total_earnings_tech_sellers
+FROM order_items oi
+JOIN products p ON oi.product_id = p.product_id
+WHERE p.product_category_name IN (
+  'computer_accessories',
+  'electronic',
+  'console_games',
+  'air_conditioning',
+  'audio',
+  'computers',
+  'music',
+  'tablets_printing_image',
+  'pc_gamer',
+  'telephony',
+  'fixed_telephony',
+  'dvds_blu_ray'
+);
+
+
+-- First, get how many months of data
+SELECT 
+  COUNT(DISTINCT DATE_FORMAT(order_purchase_timestamp, '%Y-%m')) AS months_count
+FROM orders;
+
+-- Then, average monthly income for all sellers
+SELECT 
+  SUM(oi.price + oi.freight_value) / 
+    (SELECT COUNT(DISTINCT DATE_FORMAT(order_purchase_timestamp, '%Y-%m')) 
+     FROM orders
+    ) AS avg_monthly_earnings_all_sellers
+FROM order_items oi;
+
+
+-- Average monthly income for Tech sellers
+SELECT 
+  SUM(oi.price + oi.freight_value) / 
+    (SELECT COUNT(DISTINCT DATE_FORMAT(order_purchase_timestamp, '%Y-%m')) 
+     FROM orders
+    ) AS avg_monthly_earnings_tech_sellers
+FROM order_items oi
+JOIN products p ON oi.product_id = p.product_id
+WHERE p.product_category_name IN (
+  'computer_accessories',
+  'electronic',
+  'console_games',
+  'air_conditioning',
+  'audio',
+  'computers',
+  'music',
+  'tablets_printing_image',
+  'pc_gamer',
+  'telephony',
+  'fixed_telephony',
+  'dvds_blu_ray'
+);
+
+WITH product_groups AS (
+  SELECT
+    o.order_id,
+    o.order_delivered_customer_date,
+    o.order_estimated_delivery_date,
+    CASE
+      WHEN p.product_category_name IN (
+        'bed_bath_table',
+        'furniture_decor',
+        'home_comfort2',
+        'sofa_mattress'
+      ) THEN 'Big products'
+      WHEN p.product_category_name IN (
+        'computers',
+        'electronics',
+        'telephony',
+        'audio',
+        'tablets_printing_image'
+      ) THEN 'Tech products'
+      ELSE 'Small products'
+    END AS product_group
+  FROM orders o
+  JOIN order_items oi ON o.order_id = oi.order_id
+  JOIN products p ON oi.product_id = p.product_id
+  WHERE o.order_delivered_customer_date IS NOT NULL
+)
+SELECT
+  product_group,
+  COUNT(*) AS order_count,
+  AVG(
+    DATEDIFF(order_delivered_customer_date, order_estimated_delivery_date)
+  ) AS avg_delay_days,
+  ROUND(
+    100.0 * SUM(
+      CASE
+        WHEN order_delivered_customer_date > order_estimated_delivery_date
+          THEN 1 ELSE 0
+      END
+    ) / COUNT(*),
+    2
+  ) AS delay_pct
+FROM product_groups
+GROUP BY product_group
+ORDER BY product_group;
+
+-- top 5 brazillian states by total num orders
+SHOW TABLES;
+
+DESCRIBE customers;
+
+
+-- total orders each states
+SELECT
+  g.state,
+  COUNT(o.order_id) AS total_orders
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id
+JOIN geo g ON c.customer_zip_code_prefix = g.zip_code_prefix
+GROUP BY g.state;
+
+DESCRIBE order_reviews;
+
+-- tech orders top 5 states
+
+SELECT
+  g.state,
+  COUNT(oi.order_id) AS tech_orders
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id
+JOIN geo g ON c.customer_zip_code_prefix = g.zip_code_prefix
+JOIN order_items oi ON o.order_id = oi.order_id
+JOIN products p ON oi.product_id = p.product_id
+WHERE p.product_category_name IN (
+  'computer_accessories',
+  'electronic',
+  'console_games',
+  'air_conditioning',
+  'audio',
+  'computers',
+  'music',
+  'tablets_printing_image',
+  'pc_gamer',
+  'telephony',
+  'fixed_telephony',
+  'dvds_blu_ray'
+)
+GROUP BY g.state
+ORDER BY tech_orders DESC
+LIMIT 5;
+
