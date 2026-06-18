@@ -133,3 +133,7 @@ eniac-magist-analysis/
 
 
 [https://prezi.com/view/CGaIzOEf6VfaH7zTRUB9/?referral_token=WiGIBmlnB3FN](https://prezi.com/view/CGaIzOEf6VfaH7zTRUB9/?referral_token=WiGIBmlnB3FN)
+
+
+## Project Status
+Completed as part of WBS Coding School Data Analytics Bootcamp.
